@@ -8,6 +8,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -242,6 +243,49 @@ public class SWE262Test {
             assertEquals("Expecting an exception message",
                     "JSONObject[\"name\"] not found.",
                     e.getMessage());
+        } catch (IOException e){
+            System.out.println("Caught a IO Exception ");
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    public void handleReplaceTag() {
+        String xmlStr ="<?xml version=\"1.0\"?>\n" +
+                "<catalog>\n" +
+                "    <book id=\"bk109\">\n" +
+                "        <author>Kress, Peter</author>\n" +
+                "        <title>Paradox Lost</title>\n" +
+                "        <genre>Science Fiction</genre>\n" +
+                "        <price>6.95</price>\n" +
+                "        <publish_date>2000-11-02</publish_date>\n" +
+                "        <description>After an inadvertant trip through a Heisenberg\n" +
+                "            Uncertainty Device, James Salway discovers the problems\n" +
+                "            of being quantum.\n" +
+                "        </description>\n" +
+                "    </book>\n" +
+                "    <book id=\"bk110\">\n" +
+                "        <author>O'Brien, Tim</author>\n" +
+                "        <title>Microsoft .NET: The Programming Bible</title>\n" +
+                "        <genre>Computer</genre>\n" +
+                "        <price>36.95</price>\n" +
+                "        <publish_date>2000-12-09</publish_date>\n" +
+                "        <description>Microsoft's .NET initiative is explored in\n" +
+                "            detail in this deep programmer's reference.\n" +
+                "        </description>\n" +
+                "    </book>\n" +
+                "</catalog>";
+
+        try {
+            Reader reader = new StringReader(xmlStr);
+            JSONObject newObj = XML.toJSONObjectTest(reader, s -> "SWE262_" + s);
+            assertEquals("Correct result.","{\"SWE262_catalog\":{\"SWE262_book\":[{\"SWE262_author\":\"Kress, Peter\",\"SWE262_title\":\"Paradox Lost\",\"SWE262_publish_date\":\"2000-11-02\",\"SWE262_genre\":\"Science Fiction\",\"SWE262_description\":\"After an inadvertant trip through a Heisenberg\\n            Uncertainty Device, James Salway discovers the problems\\n            of being quantum.\",\"SWE262_id\":\"bk109\",\"SWE262_price\":6.95},{\"SWE262_author\":\"O'Brien, Tim\",\"SWE262_title\":\"Microsoft .NET: The Programming Bible\",\"SWE262_publish_date\":\"2000-12-09\",\"SWE262_genre\":\"Computer\",\"SWE262_description\":\"Microsoft's .NET initiative is explored in\\n            detail in this deep programmer's reference.\",\"SWE262_id\":\"bk110\",\"SWE262_price\":36.95}]}}",newObj.toString());
+//            System.out.println(newObj.toString());
+            reader.close();
+        } catch (JSONException e) {
+            System.out.println("Caught a JSON Exception ");
+            e.printStackTrace();
         } catch (IOException e){
             System.out.println("Caught a IO Exception ");
             e.printStackTrace();
