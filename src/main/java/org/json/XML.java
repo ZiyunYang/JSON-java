@@ -33,6 +33,10 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Stack;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 
@@ -940,6 +944,23 @@ public class XML {
         return toJSONObject(new StringReader(string), config);
     }
 
+
+    public static class Task implements Callable<JSONObject> {
+        Reader reader;
+        public Task(Reader reader){
+            this.reader = reader;
+        }
+        @Override
+        public JSONObject call() throws Exception {
+            return toJSONObject(reader);
+        }
+    }
+    public static Future<JSONObject> toJSONObjectM5(Reader reader){
+        ExecutorService es = Executors.newCachedThreadPool();
+        Future<JSONObject> future = es.submit(new Task(reader));
+        es.shutdown();
+        return future;
+    }
 
 
     /**

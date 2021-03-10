@@ -40,6 +40,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -1067,5 +1069,47 @@ public class XMLTest {
             });
             fail("Expected to be unable to modify the config");
         } catch (Exception ignored) { }
+    }
+
+    @Test
+    public void testAsyncToJson(){
+        String xml ="<?xml version=\"1.0\"?>\n" +
+                "<catalog>\n" +
+                "    <book id=\"bk109\">\n" +
+                "        <author>Kress Peter</author>\n" +
+                "        <title>Paradox Lost</title>\n" +
+                "        <genre>Science Fiction</genre>\n" +
+                "        <price>6.95</price>\n" +
+                "        <publish_date>2000-11-02</publish_date>\n" +
+                "        <description>After an inadvertant trip through a Heisenberg\n" +
+                "            Uncertainty Device, James Salway discovers the problems\n" +
+                "            of being quantum.\n" +
+                "        </description>\n" +
+                "    </book>\n" +
+                "    <book id=\"bk110\">\n" +
+                "        <author>O'Brien, Tim</author>\n" +
+                "        <title>Microsoft .NET: The Programming Bible</title>\n" +
+                "        <genre>Computer</genre>\n" +
+                "        <price>36.95</price>\n" +
+                "        <publish_date>2000-12-09</publish_date>\n" +
+                "        <description>Microsoft's .NET initiative is explored in\n" +
+                "            detail in this deep programmer's reference.\n" +
+                "        </description>\n" +
+                "    </book>\n" +
+                "</catalog>";
+        JSONObject expectedJsonObject = new JSONObject();
+        Reader reader = new StringReader(xml);
+        Future<JSONObject> future = XML.toJSONObjectM5(reader);
+        JSONObject obj = null;
+        try{
+            obj = future.get();
+        }catch (InterruptedException e) {
+            System.out.println("meet interrupted exception");
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            System.out.println("meet execution exception");
+            e.printStackTrace();
+        }
+        assertEquals(obj.toString(),"{\"catalog\":{\"book\":[{\"author\":\"Kress Peter\",\"price\":6.95,\"genre\":\"Science Fiction\",\"description\":\"After an inadvertant trip through a Heisenberg\\n            Uncertainty Device, James Salway discovers the problems\\n            of being quantum.\",\"id\":\"bk109\",\"title\":\"Paradox Lost\",\"publish_date\":\"2000-11-02\"},{\"author\":\"O'Brien, Tim\",\"price\":36.95,\"genre\":\"Computer\",\"description\":\"Microsoft's .NET initiative is explored in\\n            detail in this deep programmer's reference.\",\"id\":\"bk110\",\"title\":\"Microsoft .NET: The Programming Bible\",\"publish_date\":\"2000-12-09\"}]}}");
     }
 }
